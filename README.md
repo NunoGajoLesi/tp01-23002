@@ -10,6 +10,7 @@
 2. [Ferramentas utilizadas](#ferramentas-utilizadas)
 3. [Antes de executar](#antes-de-executar)
 4. [Como executar](#como-executar)
+5. [Vídeo com demonstração](#5-vídeo-com-demonstração)
 
 ---
 
@@ -139,3 +140,9 @@ Executar primeiro o ponto 1, que gera o `car_data_limpo.csv` de que o dashboard 
 7. Abrir o dashboard em `http://127.0.0.1:1880/dashboard`.
 
 > O node **csv** do fluxo usa o ponto e vírgula (`;`) como separador, porque é o que o Kettle usa por defeito ao gravar o CSV. Se esse separador for alterado no Kettle, tem de ser alterado também no node **csv**.
+
+### 5. Vídeo com demonstração
+
+Um vídeo com a demonstração do trabalho está disponível em: [
+https://drive.google.com/file/d/1FKy33Du_hWar0gOOgGV8y6aZZol0ldhy/view](
+https://drive.google.com/file/d/1FKy33Du_hWar0gOOgGV8y6aZZol0ldhy/view)
