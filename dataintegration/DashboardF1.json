@@ -1,0 +1,563 @@
+[
+    {
+        "id": "a23a6dbcbcc19732",
+        "type": "tab",
+        "label": "DashboardF1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "0e1398b2291bbf1f",
+        "type": "inject",
+        "z": "a23a6dbcbcc19732",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 510,
+        "y": 20,
+        "wires": [
+            [
+                "44cfba55dbf529fe"
+            ]
+        ]
+    },
+    {
+        "id": "b0814a25441e5104",
+        "type": "csv",
+        "z": "a23a6dbcbcc19732",
+        "name": "",
+        "spec": "rfc",
+        "sep": ";",
+        "hdrin": true,
+        "hdrout": "none",
+        "multi": "mult",
+        "ret": "\\r\\n",
+        "temp": "",
+        "skip": "0",
+        "strings": true,
+        "include_empty_strings": "",
+        "include_null_values": "",
+        "x": 490,
+        "y": 380,
+        "wires": [
+            [
+                "91965dc357478a37",
+                "425cc8d066f77d21"
+            ]
+        ]
+    },
+    {
+        "id": "44cfba55dbf529fe",
+        "type": "file in",
+        "z": "a23a6dbcbcc19732",
+        "name": "",
+        "filename": "C:\\Users\\nunog\\OneDrive\\Ambiente de Trabalho\\LESI Nuno\\LESI\\2026-2027\\1 Semestre\\ISI\\TPI\\tp01-23002\\data\\output\\car_data_limpo.csv",
+        "filenameType": "str",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 530,
+        "y": 240,
+        "wires": [
+            [
+                "b0814a25441e5104"
+            ]
+        ]
+    },
+    {
+        "id": "91965dc357478a37",
+        "type": "debug",
+        "z": "a23a6dbcbcc19732",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 700,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "425cc8d066f77d21",
+        "type": "function",
+        "z": "a23a6dbcbcc19732",
+        "name": "preparar_telemetria",
+        "func": "const rows = msg.payload;\nconst step = 20;                         // 1 em cada 20 linhas (~900 pontos)\nconst out = { speed: [], rpm: [], throttle: [], gear: [] };\nconst parse = (s) => Date.parse(String(s).replace(' ', 'T').replace(/(\\.\\d{3})\\d*/, '$1'));\nlet t0 = null, vmax = 0;\n\nfor (let i = 0; i < rows.length; i++) {\n  const r = rows[i];\n  if (!r || !r.date) continue;\n  const t = parse(r.date);\n  if (isNaN(t)) continue;\n  if (t0 === null) t0 = t;               // início da sessão\n  const v = Number(r.speed);\n  if (v > vmax) vmax = v;\n  if (i % step !== 0) continue;\n  const x = t;\n  out.speed.push({ x: x, y: v });\n  out.rpm.push({ x: x, y: Number(r.rpm) });\n  out.throttle.push({ x: x, y: Number(r.throttle) });\n  out.gear.push({ x: x, y: Number(r.n_gear) });\n}\n\nreturn [\n  { topic: 'Velocidade (km/h)', payload: out.speed },\n  { topic: 'Rotações (rpm)',    payload: out.rpm },\n  { topic: 'Acelerador (%)',    payload: out.throttle },\n  { topic: 'Mudança',           payload: out.gear },\n  { topic: 'Velocidade máxima', payload: vmax }\n];",
+        "outputs": 5,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 460,
+        "wires": [
+            [
+                "207150cb5d309a44"
+            ],
+            [
+                "9081d239fa7f1673"
+            ],
+            [
+                "ae280e99ca5770e0"
+            ],
+            [
+                "9a2381d2c8f7d482"
+            ],
+            [
+                "88eb754545d1d393"
+            ]
+        ]
+    },
+    {
+        "id": "207150cb5d309a44",
+        "type": "ui-chart",
+        "z": "a23a6dbcbcc19732",
+        "group": "b073182f3e65aeb4",
+        "name": "Velocidade",
+        "label": "Velocidade (km/h)",
+        "order": 2,
+        "chartType": "line",
+        "category": "topic",
+        "categoryType": "msg",
+        "xAxisLabel": "",
+        "xAxisProperty": "x",
+        "xAxisPropertyType": "property",
+        "xAxisType": "linear",
+        "xAxisFormat": "",
+        "xAxisFormatType": "auto",
+        "xmin": "",
+        "xmax": "",
+        "yAxisLabel": "",
+        "yAxisProperty": "y",
+        "yAxisPropertyType": "property",
+        "ymin": "",
+        "ymax": "",
+        "bins": 10,
+        "action": "replace",
+        "stackSeries": false,
+        "pointShape": "circle",
+        "pointRadius": 4,
+        "showLegend": true,
+        "removeOlder": "9999",
+        "removeOlderUnit": "86400",
+        "removeOlderPoints": "2000",
+        "colors": [
+            "#0095ff",
+            "#ff0000",
+            "#ff7f0e",
+            "#2ca02c",
+            "#a347e1",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "textColor": [
+            "#666666"
+        ],
+        "textColorDefault": true,
+        "gridColor": [
+            "#e5e5e5"
+        ],
+        "gridColorDefault": true,
+        "width": 6,
+        "height": 8,
+        "className": "",
+        "interpolation": "linear",
+        "x": 1050,
+        "y": 440,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ae280e99ca5770e0",
+        "type": "ui-chart",
+        "z": "a23a6dbcbcc19732",
+        "group": "c9579381677dbcf5",
+        "name": "Acelerador",
+        "label": "Acelerador (%)",
+        "order": 1,
+        "chartType": "line",
+        "category": "topic",
+        "categoryType": "msg",
+        "xAxisLabel": "Tempo (min)",
+        "xAxisProperty": "x",
+        "xAxisPropertyType": "property",
+        "xAxisType": "time",
+        "xAxisFormat": "",
+        "xAxisFormatType": "auto",
+        "xmin": "",
+        "xmax": "",
+        "yAxisLabel": "",
+        "yAxisProperty": "y",
+        "yAxisPropertyType": "property",
+        "ymin": "",
+        "ymax": "",
+        "bins": 10,
+        "action": "replace",
+        "stackSeries": false,
+        "pointShape": "circle",
+        "pointRadius": "0",
+        "showLegend": true,
+        "removeOlder": "9999",
+        "removeOlderUnit": "86400",
+        "removeOlderPoints": "2000",
+        "colors": [
+            "#0095ff",
+            "#ff0000",
+            "#ff7f0e",
+            "#2ca02c",
+            "#a347e1",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "textColor": [
+            "#666666"
+        ],
+        "textColorDefault": true,
+        "gridColor": [
+            "#e5e5e5"
+        ],
+        "gridColorDefault": true,
+        "width": 6,
+        "height": 8,
+        "className": "",
+        "interpolation": "linear",
+        "x": 1050,
+        "y": 520,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "9081d239fa7f1673",
+        "type": "ui-chart",
+        "z": "a23a6dbcbcc19732",
+        "group": "06dc6bd503c47d34",
+        "name": "Rotações",
+        "label": "Rotações (rpm)",
+        "order": 1,
+        "chartType": "line",
+        "category": "topic",
+        "categoryType": "msg",
+        "xAxisLabel": "",
+        "xAxisProperty": "x",
+        "xAxisPropertyType": "property",
+        "xAxisType": "linear",
+        "xAxisFormat": "",
+        "xAxisFormatType": "auto",
+        "xmin": "",
+        "xmax": "",
+        "yAxisLabel": "",
+        "yAxisProperty": "y",
+        "yAxisPropertyType": "property",
+        "ymin": "",
+        "ymax": "",
+        "bins": 10,
+        "action": "replace",
+        "stackSeries": false,
+        "pointShape": "circle",
+        "pointRadius": 4,
+        "showLegend": true,
+        "removeOlder": "999",
+        "removeOlderUnit": "86400",
+        "removeOlderPoints": "2000",
+        "colors": [
+            "#0095ff",
+            "#ff0000",
+            "#ff7f0e",
+            "#2ca02c",
+            "#a347e1",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "textColor": [
+            "#666666"
+        ],
+        "textColorDefault": true,
+        "gridColor": [
+            "#e5e5e5"
+        ],
+        "gridColorDefault": true,
+        "width": 6,
+        "height": 8,
+        "className": "",
+        "interpolation": "linear",
+        "x": 1040,
+        "y": 480,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "9a2381d2c8f7d482",
+        "type": "ui-chart",
+        "z": "a23a6dbcbcc19732",
+        "group": "06dc6bd503c47d34",
+        "name": "Mudança",
+        "label": "Mudança",
+        "order": 2,
+        "chartType": "line",
+        "category": "topic",
+        "categoryType": "msg",
+        "xAxisLabel": "",
+        "xAxisProperty": "x",
+        "xAxisPropertyType": "property",
+        "xAxisType": "linear",
+        "xAxisFormat": "",
+        "xAxisFormatType": "auto",
+        "xmin": "",
+        "xmax": "",
+        "yAxisLabel": "",
+        "yAxisProperty": "y",
+        "yAxisPropertyType": "property",
+        "ymin": "",
+        "ymax": "",
+        "bins": 10,
+        "action": "replace",
+        "stackSeries": false,
+        "pointShape": "circle",
+        "pointRadius": "0",
+        "showLegend": true,
+        "removeOlder": "9999",
+        "removeOlderUnit": "86400",
+        "removeOlderPoints": "2000",
+        "colors": [
+            "#0095ff",
+            "#ff0000",
+            "#ff7f0e",
+            "#2ca02c",
+            "#a347e1",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "textColor": [
+            "#666666"
+        ],
+        "textColorDefault": true,
+        "gridColor": [
+            "#e5e5e5"
+        ],
+        "gridColorDefault": true,
+        "width": 6,
+        "height": 8,
+        "className": "",
+        "interpolation": "step",
+        "x": 1040,
+        "y": 560,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "88eb754545d1d393",
+        "type": "ui-gauge",
+        "z": "a23a6dbcbcc19732",
+        "name": "Velocidade máxima",
+        "group": "b073182f3e65aeb4",
+        "order": 1,
+        "value": "payload",
+        "valueType": "msg",
+        "width": 3,
+        "height": 3,
+        "gtype": "gauge-half",
+        "gstyle": "needle",
+        "title": "Velocidade máxima",
+        "alwaysShowTitle": false,
+        "floatingTitlePosition": "top-left",
+        "units": "km/h",
+        "icon": "",
+        "prefix": "",
+        "suffix": "",
+        "segments": [
+            {
+                "from": "0",
+                "color": "#5cd65c",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "200",
+                "color": "#ffc800",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "300",
+                "color": "#ea5353",
+                "text": "",
+                "textType": "label"
+            }
+        ],
+        "min": 0,
+        "max": "350",
+        "sizeThickness": 16,
+        "sizeGap": 4,
+        "sizeKeyThickness": 8,
+        "styleRounded": true,
+        "styleGlow": false,
+        "className": "",
+        "x": 1070,
+        "y": 620,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b073182f3e65aeb4",
+        "type": "ui-group",
+        "name": "Velocidade",
+        "page": "1a019479a39d0a12",
+        "width": 6,
+        "height": 1,
+        "order": 1,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default",
+        "tab": ""
+    },
+    {
+        "id": "c9579381677dbcf5",
+        "type": "ui-group",
+        "name": "Pedais",
+        "page": "1a019479a39d0a12",
+        "width": 6,
+        "height": 1,
+        "order": 3,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default",
+        "tab": ""
+    },
+    {
+        "id": "06dc6bd503c47d34",
+        "type": "ui-group",
+        "name": "Motor",
+        "page": "1a019479a39d0a12",
+        "width": 6,
+        "height": 1,
+        "order": 2,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default",
+        "tab": ""
+    },
+    {
+        "id": "1a019479a39d0a12",
+        "type": "ui-page",
+        "name": "Telemetria",
+        "ui": "4a538ec6526740ba",
+        "path": "/page1",
+        "icon": "home",
+        "layout": "grid",
+        "theme": "f981e522dfda277b",
+        "breakpoints": [
+            {
+                "name": "Default",
+                "px": "0",
+                "cols": "3"
+            },
+            {
+                "name": "Tablet",
+                "px": "576",
+                "cols": "6"
+            },
+            {
+                "name": "Small Desktop",
+                "px": "768",
+                "cols": "9"
+            },
+            {
+                "name": "Desktop",
+                "px": "1024",
+                "cols": "12"
+            }
+        ],
+        "tabs": [],
+        "order": 1,
+        "className": "",
+        "visible": true,
+        "disabled": false
+    },
+    {
+        "id": "4a538ec6526740ba",
+        "type": "ui-base",
+        "name": "Telemetria",
+        "path": "/dashboard",
+        "appIcon": "",
+        "includeClientData": true,
+        "acceptsClientConfig": [
+            "ui-notification",
+            "ui-control"
+        ],
+        "showPathInSidebar": false,
+        "headerContent": "page",
+        "navigationStyle": "default",
+        "titleBarStyle": "default",
+        "showReconnectNotification": true,
+        "notificationDisplayTime": 1,
+        "showDisconnectNotification": true,
+        "allowInstall": false
+    },
+    {
+        "id": "f981e522dfda277b",
+        "type": "ui-theme",
+        "name": "Default Theme",
+        "colors": {
+            "surface": "#fcfcfd",
+            "primary": "#0d74ce",
+            "bgPage": "#f9f9fb",
+            "groupBg": "#ffffff",
+            "groupOutline": "#d9d9e0"
+        },
+        "sizes": {
+            "density": "default",
+            "pagePadding": "12px",
+            "groupGap": "12px",
+            "groupBorderRadius": "4px",
+            "widgetGap": "12px"
+        }
+    },
+    {
+        "id": "2952cb2c236b1557",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "@flowfuse/node-red-dashboard": "1.33.0"
+        }
+    }
+]
